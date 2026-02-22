@@ -1,5 +1,8 @@
 package org.example;
 
+import org.example.exceptions.IdadeInvalidaException;
+import org.example.exceptions.PatioVazioException;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
@@ -13,22 +16,6 @@ public class Main {
     public static void main(String[] args) {
         Patio patio = new Patio();
 
-        Veiculo veiculo = new Veiculo("Chevrolet", "Onix", 2015, "Prata", 45000);
-        Carro carro = new Carro("Chevrolet", "Onix", 2015, "Prata", 45000,5,"Flex",200);
-        Moto moto = new Moto("Kawasaky","Ninja 900",2019,"Verde",55000,900,true,"Head");
-        Monociclo mono = new Monociclo("Kingsong", "KS-14D PRO", 2021, "Preto", 6324.0,30.0, 40.0, 800.0);
-        Pessoa pessoa = new Pessoa("Leonardo", 52, "Rua 1 n123", "1138325599", "leo@email.com", 192, 98.4);
-        Venda venda = new Venda(carro, pessoa, 50000, LocalDateTime.now());
-        Venda venda2 = new Venda(mono, pessoa, 6324.05, LocalDateTime.now());
-        clientes.add(pessoa);
-
-
-        patio.addVeiculo(carro);
-        patio.addVeiculo(mono);
-        patio.addVeiculo(moto);
-
-        vendas.add(venda);
-        vendas.add(venda2);
 
 
         Scanner scanner = new Scanner(System.in);
@@ -205,7 +192,7 @@ public class Main {
                     System.out.println("Não há clientes na base de dados!");
                 }
                 if (patio.getVeiculos().isEmpty()) {
-                    System.out.println("Não há veículos disponíveis para vendas!");
+                    throw new PatioVazioException("Operação cancelada: Não há veículos no pátio para realizar vendas.");
                 }
             } else {
 
@@ -236,6 +223,8 @@ public class Main {
             System.out.println("Erro: Entrada inválida. Certifique-se de inserir os dados corretamente!");
         } catch (IndexOutOfBoundsException e) {
             System.out.println("Erro: Índice inválido. Certifique-se de escolher uma opção correta!");
+        } catch (PatioVazioException e){
+            System.out.println("Erro: " + e.getMessage());
         } catch (Exception e) {
             System.out.println("Erro desconhecido: " + e.getMessage());
         }
@@ -265,6 +254,10 @@ public class Main {
             int idade = scanner.nextInt();
             scanner.nextLine();
 
+            if (idade < 18) {
+                throw new IdadeInvalidaException("O cliente deve ter pelo menos 18 anos para ser cadastrado.");
+            }
+
             System.out.println("Digite o endereço do cliente: ");
             String endereco = scanner.nextLine();
 
@@ -288,6 +281,8 @@ public class Main {
             System.out.println("O cliente: "+nome+", foi cadastrado com sucesso!");
         }catch (InputMismatchException e){
             System.out.println("Erro: Entrada invalida. Certifique-se de inserir os dados corretamente!");
+        }catch (IdadeInvalidaException e){
+            System.out.println("Erro : " + e.getMessage());
         }catch (Exception e){
             System.out.println("Erro desconhecido: "+e.getMessage());
         }
@@ -299,12 +294,13 @@ public class Main {
             return;
         }
 
-        mostrarClientes(); // Método já existente na Main [3]
+        mostrarClientes();
         System.out.print("Selecione o número do cliente para a sugestão: ");
         int index = scanner.nextInt() - 1;
         scanner.nextLine();
 
         if (index >= 0 && index < clientes.size()) {
+
             Pessoa p = clientes.get(index);
             double altura = p.getAltura();
             double peso = p.getPeso();
@@ -312,24 +308,25 @@ public class Main {
             System.out.println("\n--- Sugestão para " + p.getNome() + " ---");
             System.out.println("Perfil: " + altura + "cm e " + peso + "kg.");
 
-            // Lógica de sugestão baseada em biotipo
             if (altura > 185 || peso > 100) {
-                // Biotipo Grande: Foco em conforto e espaço interno
+
                 System.out.println("Recomendação: CARRO.");
                 System.out.println("Motivo: Pelo seu porte físico, um carro oferece melhor ergonomia e espaço.");
-                patio.mostrarCarros(); // [4]
+                patio.mostrarCarros();
+
             }
             else if (altura >= 165 && altura <= 185) {
-                // Biotipo Médio: Versatilidade
+
                 System.out.println("Recomendação: MOTO.");
                 System.out.println("Motivo: Sua estatura é ideal para o equilíbrio e alcance dos comandos em motocicletas.");
-                patio.mostrarMotos(); // [5]
+                patio.mostrarMotos();
+
             }
             else {
                 // Biotipo Pequeno: Foco em agilidade e baixo centro de gravidade
                 System.out.println("Recomendação: MONOCICLO.");
                 System.out.println("Motivo: Pela sua estatura e peso, um monociclo elétrico oferece excelente manobrabilidade.");
-                patio.mostrarMonociclos(); // [6]
+                patio.mostrarMonociclos();
             }
         } else {
             System.out.println("Cliente inválido.");
@@ -339,17 +336,43 @@ public class Main {
     private static void gerarRelatorio() {
         if (vendas.isEmpty()) {
             System.out.println("Não existem vendas cadastradas!");
-        }else{
-            System.out.println("### Relatorio de vendas ###");
-            System.out.println();
+        } else {
+            System.out.println("### Relatório de Vendas (Análise de Lucro/Perda) ###\n");
+
+            ArrayList<Double> totalLucro = new ArrayList<>();
+
             for (Venda venda : vendas) {
-                System.out.println("Data: "+ venda.getDataVenda());
-                System.out.println("Veiculo: "+venda.getVeiculo().getModelo()+" - "+venda.getVeiculo().getAno());
-                System.out.println("Comprador: "+venda.getComprador().getNome()+" - "+venda.getComprador().getTelefone());
-                System.out.println("Valor da venda: R$"+venda.getValor());
-                System.out.println("----------------------------------------------------------------");
-                System.out.println();
+
+                double precoOriginal = venda.getVeiculo().getPreco();
+                double valorVenda = venda.getValor();
+                double resultado = valorVenda - precoOriginal;
+                totalLucro.add(resultado);
+
+                System.out.println("Data: " + venda.getDataVenda());
+                System.out.println("Veículo: " + venda.getVeiculo().getModelo() + " - " + venda.getVeiculo().getAno());
+                System.out.println("Comprador: " + venda.getComprador().getNome());
+                System.out.println("Preço de Aquisição: R$" + precoOriginal);
+                System.out.println("Valor da Venda: R$" + valorVenda);
+
+                if (resultado > 0) {
+                    System.out.println("Resultado: LUCRO de R$" + String.format("%.2f", resultado));
+                } else if (resultado < 0) {
+                    System.out.println("Resultado: PERDA de R$" + String.format("%.2f", Math.abs(resultado)));
+                } else {
+                    System.out.println("Resultado: VENDA PELO PREÇO DE CUSTO");
+                }
+
+                System.out.println("----------------------------------------------------------------\n");
             }
+            Double somadoResultadoGeral = totalLucro.stream().mapToDouble(Double::doubleValue).sum();
+
+            String resultado = somadoResultadoGeral > 0
+                    ? "um LUCRO de R$"
+                    : "uma PERDA de R$";
+
+            System.out.println("Todas as vendas resultaram em "
+                    + resultado
+                    + String.format("%.2f", somadoResultadoGeral));
         }
     }
 }
