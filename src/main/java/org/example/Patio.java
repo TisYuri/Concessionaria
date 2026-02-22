@@ -1,40 +1,55 @@
 package org.example;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Patio {
-    private ArrayList<Carro> carros;
-    private ArrayList<Monociclo> monociclos;
-    private ArrayList<Moto> motos;
+
+    private ArrayList<Veiculo> veiculos;
 
     public Patio() {
-        this.carros = new ArrayList<>();
-        this.monociclos = new ArrayList<>();
-        this.motos = new ArrayList<>();
+        this.veiculos = new ArrayList<>();
+    }
+
+    public void addVeiculo(Veiculo veiculo) {
+        this.veiculos.add(veiculo);
+    }
+
+    public void removeVeiculo(Veiculo veiculo) {
+        this.veiculos.remove(veiculo);
+    }
+
+    public ArrayList<Veiculo> getVeiculos() {
+        return veiculos;
     }
 
     public void mostrarCarros() {
+
+        List<Carro> carros = veiculos.stream()
+                .filter(v -> v instanceof Carro)
+                .map(v -> (Carro) v)
+                .toList();
+
         if (!carros.isEmpty()) {
             System.out.println("### Lista de Carros ###");
-            int x = 1;
+
+            int i = 1;
             for (Carro carro : carros) {
-                System.out.println(x+" - "+carro.getModelo()+" - "+carro.getAno());
-                x++;
+                System.out.println(i + " - " + carro.getModelo() + " - " + carro.getAno());
+                i++;
             }
-        }else{
+
+        } else {
             System.out.println("Nenhum carro foi encontrado!");
         }
     }
 
-    public void addCarro(Carro carro) {
-        this.carros.add(carro);
-    }
-
-    public void removeCarro(Carro carro){
-        this.carros.remove(carro);
-    }
-
     public void mostrarMonociclos() {
+        List<Monociclo> monociclos = veiculos.stream()
+                .filter(x -> x instanceof Monociclo)
+                .map(x -> (Monociclo) x )
+                .toList();
+
         if (!monociclos.isEmpty()) {
             System.out.println("### Lista de monociclos ###");
             int x = 1;
@@ -42,20 +57,18 @@ public class Patio {
                 System.out.println(x+" - "+monociclo.getModelo()+" - "+monociclo.getAno());
                 x++;
             }
-        }else{
+        } else {
             System.out.println("Nenhum monociclo foi encontrado!");
         }
     }
 
-    public void addMonociclo(Monociclo monociclo) {
-        this.monociclos.add(monociclo);
-    }
-
-    public void removeMonociclo(Monociclo monociclo){
-        this.monociclos.remove(monociclo);
-    }
-
     public void mostrarMotos() {
+
+        List<Moto> motos = veiculos.stream()
+                .filter(x -> x instanceof Moto)
+                .map(x -> (Moto) x )
+                .toList();
+
         if (!motos.isEmpty()) {
             System.out.println("### Lista de Motos ###");
             int x = 1;
@@ -63,36 +76,23 @@ public class Patio {
                 System.out.println(x+" - "+moto.getModelo()+" - "+moto.getAno());
                 x++;
             }
-        }else{
+        } else {
             System.out.println("Nenhuma moto foi encontrada!");
         }
     }
 
-    public ArrayList<Carro> getCarros() {
-        return carros;
-    }
-
-    public ArrayList<Monociclo> getMonociclos() {
-        return monociclos;
-    }
-
-    public ArrayList<Moto> getMotos() {
-        return motos;
-    }
-
-    public void addMoto(Moto moto) {
-        this.motos.add(moto);
-    }
-
-    public void removeMoto(Moto moto){
-        this.motos.remove(moto);
-    }
-
     public void exibirVeiculosNoPatio() {
-        this.mostrarCarros();
-        System.out.println("----------------------------------");
-        this.mostrarMotos();
-        System.out.println("----------------------------------");
-        this.mostrarMonociclos();
+        if (veiculos.isEmpty()) {
+            System.out.println("Nenhum veículo foi encontrado no pátio!");
+            return;
+        }
+
+        System.out.println("### Lista de Veículos no Pátio ###");
+        for (int i = 0; i < veiculos.size(); i++) {
+            System.out.println("Veículo " + (i + 1) + ":");
+            // O Java chamará o exibirInformacoes específico de cada subclasse
+            veiculos.get(i).exibirInformacoes();
+            System.out.println("----------------------------------");
+        }
     }
 }

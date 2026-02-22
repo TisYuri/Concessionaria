@@ -23,9 +23,9 @@ public class Main {
         clientes.add(pessoa);
 
 
-        patio.addCarro(carro);
-        patio.addMonociclo(mono);
-        patio.addMoto(moto);
+        patio.addVeiculo(carro);
+        patio.addVeiculo(mono);
+        patio.addVeiculo(moto);
 
         vendas.add(venda);
         vendas.add(venda2);
@@ -42,6 +42,7 @@ public class Main {
                 System.out.println("4 - Cadastrar um cliente");
                 System.out.println("5 - Mostrar clientes");
                 System.out.println("6 - Gerar relatorio");
+                System.out.println("7 - Sugestão por Biotipo");
                 System.out.println("0 - Sair");
                 System.out.print("Escolha uma opção: ");
                 escolha = scanner.nextInt();
@@ -66,6 +67,9 @@ public class Main {
                         break;
                     case 6:
                         gerarRelatorio();
+                        break;
+                    case 7:
+                        sugerirVeiculoPorBiotipo(scanner, patio);
                         break;
                     case 0:
                         System.out.println("Fechando o programa...");
@@ -131,7 +135,7 @@ public class Main {
                         scanner.nextLine();
 
                         Carro carro = new Carro(marca, modelo, ano, cor, preco, nPortar, tipoCombustivel, capacidadePortaMalas);
-                        patio.addCarro(carro);
+                        patio.addVeiculo(carro);
 
 
                         System.out.println("Carro modelo: "+modelo+", cadastrado com sucesso!");
@@ -156,7 +160,7 @@ public class Main {
                         String categoria = scanner.nextLine();
 
                         Moto moto = new Moto(marca, modelo, ano, cor, preco, cilindradas, partidaEletrica, categoria);
-                        patio.addMoto(moto);
+                        patio.addVeiculo(moto);
                         System.out.println("moto modelo: "+modelo+", cadastrada com sucesso!");
                         escolha = 0;
                         break;
@@ -175,7 +179,7 @@ public class Main {
                         scanner.nextLine();
 
                         Monociclo monociclo = new Monociclo(marca, modelo, ano, cor, preco, velocidadeMaxima, autonomiaKm, powerInWatts);
-                        patio.addMonociclo(monociclo);
+                        patio.addVeiculo(monociclo);
                         System.out.println("monociclo modelo: "+modelo+", cadastrado com sucesso!");
                         escolha = 0;
                     break;
@@ -195,80 +199,45 @@ public class Main {
     }
 
     private static void venderVeiculo(Scanner scanner, Patio patio) {
-        try{
-            if (clientes.isEmpty() || (patio.getCarros().isEmpty() && patio.getMotos().isEmpty() && patio.getMonociclos().isEmpty())) {
+        try {
+            if (clientes.isEmpty() || patio.getVeiculos().isEmpty()) {
                 if (clientes.isEmpty()) {
                     System.out.println("Não há clientes na base de dados!");
                 }
-                if (patio.getCarros().isEmpty()) {
-                    System.out.println("Não há carros disponiveis para vendas!");
+                if (patio.getVeiculos().isEmpty()) {
+                    System.out.println("Não há veículos disponíveis para vendas!");
                 }
-                if (patio.getMotos().isEmpty()) {
-                    System.out.println("Não há motos disponiveis para vendas!");
-                }
-                if (patio.getMonociclos().isEmpty()) {
-                    System.out.println("Não há monociclos disponiveis para vendas!");
-                }
-            }else{
+            } else {
+
                 mostrarClientes();
-                Pessoa comprador = clientes.get(scanner.nextInt()-1);
+                System.out.print("Selecione o cliente: ");
+                Pessoa comprador = clientes.get(scanner.nextInt() - 1);
                 scanner.nextLine();
 
-                System.out.print("Informe o valor da venda: R$");
+                System.out.print("Informe o valor da venda: R$ ");
                 double valor = scanner.nextDouble();
                 scanner.nextLine();
 
-                int escolha;
-
-                System.out.println("Qual novo veiculo deseja vender?");
-                System.out.println("1 - Carro");
-                System.out.println("2 - Moto");
-                System.out.println("3 - Monociclo");
-                escolha = scanner.nextInt();
+                patio.exibirVeiculosNoPatio();
+                System.out.print("Informe o número do veículo que deseja vender: ");
+                int indiceVeiculo = scanner.nextInt() - 1;
                 scanner.nextLine();
 
-                switch (escolha) {
-                    case 1:
-                        patio.mostrarCarros();
-                        Carro carroParaVenda = patio.getCarros().get(scanner.nextInt() -1);
-                        scanner.nextLine();
+                Veiculo veiculoParaVenda = patio.getVeiculos().get(indiceVeiculo);
 
-                        Venda novaVendaCarro = new Venda(carroParaVenda, comprador, valor, LocalDateTime.now());
-                        vendas.add(novaVendaCarro);
-                        patio.removeCarro(carroParaVenda);
-                        break;
+                Venda novaVenda = new Venda(veiculoParaVenda, comprador, valor, LocalDateTime.now());
+                vendas.add(novaVenda);
 
-                    case 2:
-                        patio.mostrarMotos();
-                        Moto motoParaVenda = patio.getMotos().get(scanner.nextInt() -1);
-                        scanner.nextLine();
+                patio.removeVeiculo(veiculoParaVenda);
 
-                        Venda novaVendaMoto = new Venda(motoParaVenda, comprador, valor, LocalDateTime.now());
-                        vendas.add(novaVendaMoto);
-                        patio.removeMoto(motoParaVenda);
-                        break;
-
-                    case 3:
-                        patio.mostrarMonociclos();
-                        Monociclo monocicloParaVenda = patio.getMonociclos().get(scanner.nextInt() -1);
-                        scanner.nextLine();
-
-                        Venda novaVendaMono
-                                = new Venda(monocicloParaVenda, comprador, valor, LocalDateTime.now());
-                        vendas.add(novaVendaMono);
-                        patio.removeMonociclo(monocicloParaVenda);
-                        break;
-
-                }
-
-                System.out.println("Venda executada com sucesso!");
+                System.out.println("Venda de " + veiculoParaVenda.getModelo() + " executada com sucesso!");
             }
-        }catch (InputMismatchException e){
-            System.out.println("Erro: Entrada invalida. Certifique-se de inserir os dados corretamente!");
-        }catch (IndexOutOfBoundsException e){
-            System.out.println("Erro: Indice invalido. Certifique-se de escolher uma opção correta!");
-        }catch (Exception e){
-            System.out.println("Erro desconhecido: "+e.getMessage());
+        } catch (InputMismatchException e) {
+            System.out.println("Erro: Entrada inválida. Certifique-se de inserir os dados corretamente!");
+        } catch (IndexOutOfBoundsException e) {
+            System.out.println("Erro: Índice inválido. Certifique-se de escolher uma opção correta!");
+        } catch (Exception e) {
+            System.out.println("Erro desconhecido: " + e.getMessage());
         }
     }
 
@@ -321,6 +290,49 @@ public class Main {
             System.out.println("Erro: Entrada invalida. Certifique-se de inserir os dados corretamente!");
         }catch (Exception e){
             System.out.println("Erro desconhecido: "+e.getMessage());
+        }
+    }
+
+    private static void sugerirVeiculoPorBiotipo(Scanner scanner, Patio patio) {
+        if (clientes.isEmpty()) {
+            System.out.println("Nenhum cliente cadastrado para análise.");
+            return;
+        }
+
+        mostrarClientes(); // Método já existente na Main [3]
+        System.out.print("Selecione o número do cliente para a sugestão: ");
+        int index = scanner.nextInt() - 1;
+        scanner.nextLine();
+
+        if (index >= 0 && index < clientes.size()) {
+            Pessoa p = clientes.get(index);
+            double altura = p.getAltura();
+            double peso = p.getPeso();
+
+            System.out.println("\n--- Sugestão para " + p.getNome() + " ---");
+            System.out.println("Perfil: " + altura + "cm e " + peso + "kg.");
+
+            // Lógica de sugestão baseada em biotipo
+            if (altura > 185 || peso > 100) {
+                // Biotipo Grande: Foco em conforto e espaço interno
+                System.out.println("Recomendação: CARRO.");
+                System.out.println("Motivo: Pelo seu porte físico, um carro oferece melhor ergonomia e espaço.");
+                patio.mostrarCarros(); // [4]
+            }
+            else if (altura >= 165 && altura <= 185) {
+                // Biotipo Médio: Versatilidade
+                System.out.println("Recomendação: MOTO.");
+                System.out.println("Motivo: Sua estatura é ideal para o equilíbrio e alcance dos comandos em motocicletas.");
+                patio.mostrarMotos(); // [5]
+            }
+            else {
+                // Biotipo Pequeno: Foco em agilidade e baixo centro de gravidade
+                System.out.println("Recomendação: MONOCICLO.");
+                System.out.println("Motivo: Pela sua estatura e peso, um monociclo elétrico oferece excelente manobrabilidade.");
+                patio.mostrarMonociclos(); // [6]
+            }
+        } else {
+            System.out.println("Cliente inválido.");
         }
     }
 

@@ -38,6 +38,9 @@ public class Monociclo extends Veiculo{
 
     @Override
     public void exibirInformacoes() {
-
+        super.exibirInformacoes();
+        System.out.println("Velocidade Máxima: " + velocidadeMaximaKm + " km/h");
+        System.out.println("Autonomia: " + autonomiaKM + " km");
+        System.out.println("Potência: " + powerInWatts + " Watts");
     }
 }
